@@ -1,5 +1,6 @@
 import axios from 'axios'
 
 export const api = axios.create({
-    baseURL: 'https://explorerback.onrender.com'
+    baseURL: 'http://localhost:3333'
+    //baseURL: 'https://explorerback.onrender.com'
 })
