@@ -1,31 +1,28 @@
-import { Container, Content, Banner } from './styles'
+import { Container, Content, Banner } from './styles';
+import { Header } from '../../Components/Header';
+import { Card } from '../../Components/Card';
+import { Footer } from '../../Components/Footer';
 
-import { Header } from '../../Components/Header'
-import { Card } from '../../Components/Card'
-import { Footer } from '../../Components/Footer'
+import banner from '../../assets/banner.svg';
 
-import 'react-multi-carousel/lib/styles.css';
+import { useState, useEffect, useRef } from 'react';
 
-
-import Carousel from 'better-react-carousel'
-
-import banner from '../../assets/banner.svg'
-
-import { useState, useEffect } from 'react'
-
-import { api } from '../../services/api'
+import { api } from '../../services/api';
 
 export function Home() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [mainDishes, setMainDishes] = useState([])
-  const [drinks, setDrinks] = useState([])
-  const [desserts, setDesserts] = useState([])
+  const [searchTerm, setSearchTerm] = useState('');
+  const [mainDishes, setMainDishes] = useState([]);
+  const [drinks, setDrinks] = useState([]);
+  const [desserts, setDesserts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [searchResultsDish, setSearchResultsDish] = useState([])
-  const [searchResultsDrink, setSearchResultsDrink] = useState([])
-  const [searchResultsDessert, setSearchResultsDessert] = useState([])
+  const [searchResultsDish, setSearchResultsDish] = useState([]);
+  const [searchResultsDrink, setSearchResultsDrink] = useState([]);
+  const [searchResultsDessert, setSearchResultsDessert] = useState([]);
 
+  const contentRefDish = useRef(null);
+  const contentRefDrink = useRef(null);
+  const contentRefDessert = useRef(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -33,58 +30,58 @@ export function Home() {
         const mainResponse = await api.get(`/getters/main`);
         const drinkResponse = await api.get(`/getters/drink`);
         const dessertResponse = await api.get(`/getters/dessert`);
-        
+
         setMainDishes(mainResponse.data);
         setDrinks(drinkResponse.data);
         setDesserts(dessertResponse.data);
 
-        setSearchResultsDish(mainResponse.data)
-        setSearchResultsDrink(drinkResponse.data)
-        setSearchResultsDessert(dessertResponse.data)
-        
+        setSearchResultsDish(mainResponse.data);
+        setSearchResultsDrink(drinkResponse.data);
+        setSearchResultsDessert(dessertResponse.data);
+
         setLoading(false);
       } catch (error) {
-        console.error('Error ao buscar dados:', error);
-        setLoading(false); 
+        console.error('Erro ao buscar dados:', error);
+        setLoading(false);
       }
     }
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    
-    if(!loading) {
-    console.log(mainDishes)
-    let resultsMainDishes = mainDishes.filter(dish => dish.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    let resultsDrinks = drinks.filter(drink => drink.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    let resultsDesserts = desserts.filter(dessert => dessert.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    
-    
-    setSearchResultsDish(resultsMainDishes)
-    setSearchResultsDrink(resultsDrinks)
-    setSearchResultsDessert(resultsDesserts)
-    }
-    
-  }, [searchTerm], mainDishes, drinks, desserts, loading)
+    if (!loading) {
+      let resultsMainDishes = mainDishes.filter(dish => dish.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      let resultsDrinks = drinks.filter(drink => drink.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      let resultsDesserts = desserts.filter(dessert => dessert.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const carouselMobile = [
-    {
-      breakpoint: 4000,
-      cols: 3,
-      rows: 1,
-      gap: 0,
-      loop: true,
-    },
-    {
-      breakpoint: 1000,
-      cols: 2,
-      rows: 1,
-      gap: 50,
-      loop: true,
-    },
-  ]  
+      setSearchResultsDish(resultsMainDishes);
+      setSearchResultsDrink(resultsDrinks);
+      setSearchResultsDessert(resultsDesserts);
+    }
+  }, [searchTerm, mainDishes, drinks, desserts, loading]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const scrollLeft = (ref) => {
+    if (ref.current) {
+      ref.current.scrollBy({
+        left: -200,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollRight = (ref) => {
+    if (ref.current) {
+      ref.current.scrollBy({
+        left: 200,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
     <Container>
@@ -104,45 +101,45 @@ export function Home() {
 
         <h1>Refeições</h1>
 
-    <div className="carousel-wrapper">
-        <Carousel responsiveLayout={carouselMobile} mobileBreakpoint={1}>
-          {
-            searchResultsDish.map(dish => (
-              <Carousel.Item key={dish.id}>
-                <Card data={dish}/>
-              </Carousel.Item>
-            ))
-          }
-        </Carousel>
+        <div className="carousel-wrapper">
+          <button className="carousel-arrow left" onClick={() => scrollLeft(contentRefDish)}>{'<'}</button>
+          <div className="carousel" ref={contentRefDish}>
+            {searchResultsDish.length > 0 &&
+              searchResultsDish.map((dish, index) => (
+                <Card key={dish.id} data={dish} />
+              ))}
+          </div>
+          <button className="carousel-arrow right" onClick={() => scrollRight(contentRefDish)}>{'>'}</button>
         </div>
 
         <h1>Sobremesas</h1>
 
-        <Carousel responsiveLayout={carouselMobile} mobileBreakpoint={1}>
-          {
-            searchResultsDessert.map(dessert => (
-              <Carousel.Item key={dessert.id}>
-                <Card data={dessert}/>
-              </Carousel.Item>
-            ))
-          }
-        </Carousel>
+        <div className="carousel-wrapper">
+          <button className="carousel-arrow left" onClick={() => scrollLeft(contentRefDessert)}>{'<'}</button>
+          <div className="carousel" ref={contentRefDessert}>
+            {searchResultsDessert.length > 0 &&
+              searchResultsDessert.map((dessert, index) => (
+                <Card key={dessert.id} data={dessert} />
+              ))}
+          </div>
+          <button className="carousel-arrow right" onClick={() => scrollRight(contentRefDessert)}>{'>'}</button>
+        </div>
 
         <h1>Bebidas</h1>
 
-        <Carousel responsiveLayout={carouselMobile} mobileBreakpoint={1}>
-          {
-            searchResultsDrink.map(drink => (
-              <Carousel.Item key={drink.id}>
-                <Card data={drink}/>
-              </Carousel.Item>
-            ))
-          }
-        </Carousel>
+        <div className="carousel-wrapper">
+          <button className="carousel-arrow left" onClick={() => scrollLeft(contentRefDrink)}>{'<'}</button>
+          <div className="carousel" ref={contentRefDrink}>
+            {searchResultsDrink.length > 0 &&
+              searchResultsDrink.map((drink, index) => (
+                <Card key={drink.id} data={drink} />
+              ))}
+          </div>
+          <button className="carousel-arrow right" onClick={() => scrollRight(contentRefDrink)}>{'>'}</button>
+        </div>
       </Content>
 
       <Footer />
-
     </Container>
-  )
+  );
 }
